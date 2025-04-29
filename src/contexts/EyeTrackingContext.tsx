@@ -68,22 +68,12 @@ export const EyeTrackingProvider: React.FC<EyeTrackingProviderProps> = ({ childr
     }
   };
 
-  // Listen for escape key to stop recording
+  // Reset tracking and recording when step changes
   useEffect(() => {
-    const handleKeyDown = (e: KeyboardEvent) => {
-      if (e.key === "Escape" && isRecording) {
-        setIsRecording(false);
-        setStep("results");
-        // In a real app, we would save recording data here
-        // For now, we'll use placeholder URLs for demo
-        setRecordingUrl("/placeholder.svg");
-        setHeatmapUrl("/placeholder.svg");
-      }
-    };
-
-    window.addEventListener("keydown", handleKeyDown);
-    return () => window.removeEventListener("keydown", handleKeyDown);
-  }, [isRecording]);
+    if (step !== "tracking" && isRecording) {
+      setIsRecording(false);
+    }
+  }, [step, isRecording]);
 
   return (
     <EyeTrackingContext.Provider

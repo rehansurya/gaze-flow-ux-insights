@@ -6,6 +6,7 @@ import { Card, CardContent, CardFooter, CardHeader, CardTitle } from "@/componen
 import { useToast } from "@/components/ui/use-toast";
 import { useEyeTracking } from "@/contexts/EyeTrackingContext";
 import { Play } from "lucide-react";
+import gazeRecorderService from "@/services/GazeRecorderService";
 
 const WebsiteInput: React.FC = () => {
   const { websiteUrl, setWebsiteUrl, setStep, setIsRecording } = useEyeTracking();
@@ -45,6 +46,10 @@ const WebsiteInput: React.FC = () => {
   };
 
   const startTracking = () => {
+    // Configure GazeRecorder API
+    gazeRecorderService.setFps(30); // Set higher FPS for better tracking
+    
+    // Start recording
     setIsRecording(true);
     setStep("tracking");
   };

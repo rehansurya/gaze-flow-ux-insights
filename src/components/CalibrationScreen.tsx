@@ -1,99 +1,85 @@
 
-import React, { useState, useEffect, useRef } from "react";
+import React, { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
 import { Progress } from "@/components/ui/progress";
 import { useEyeTracking } from "@/contexts/EyeTrackingContext";
 import { Eye, ArrowRight } from "lucide-react";
+import gazeRecorderService from "@/services/GazeRecorderService";
+import { useToast } from "@/components/ui/use-toast";
 
 const CalibrationScreen: React.FC = () => {
   const { 
     calibrationStep, 
     setCalibrationStep, 
-    calibrationMode, 
-    setCalibrationMode,
-    requestCameraPermission, 
-    cameraPermission, 
+    calibrationMode,
     setStep,
-    setCalibrationComplete 
+    setCalibrationComplete,
+    requestCameraPermission,
+    cameraPermission
   } = useEyeTracking();
   
-  const [dotPosition, setDotPosition] = useState({ x: '50%', y: '50%' });
   const [calibrationProgress, setCalibrationProgress] = useState(0);
-  const [showDot, setShowDot] = useState(false);
-  const calibrationTimerRef = useRef<NodeJS.Timeout | null>(null);
-  const positionIndexRef = useRef(0);
+  const { toast } = useToast();
 
-  // Predefined positions for the calibration dots
-  const positions = [
-    { x: '20%', y: '20%' },
-    { x: '80%', y: '20%' },
-    { x: '50%', y: '50%' },
-    { x: '20%', y: '80%' },
-    { x: '80%', y: '80%' }
-  ];
-
-  // Clean up any timers when component unmounts
+  // Set up GazeRecorder API callbacks
   useEffect(() => {
+    gazeRecorderService.onCalibrationComplete(() => {
+      console.log("Calibration completed successfully");
+      setCalibrationComplete(true);
+      gazeRecorderService.stopTracking();
+      setStep("success");
+    });
+
+    gazeRecorderService.onCameraPermissionDenied(() => {
+      toast({
+        title: "Camera Access Denied",
+        description: "Please allow camera access to use eye tracking features.",
+        variant: "destructive"
+      });
+      setCalibrationStep(1);
+    });
+
+    gazeRecorderService.onError((error) => {
+      toast({
+        title: "Error",
+        description: `Eye tracking error: ${error}`,
+        variant: "destructive"
+      });
+    });
+
+    // Clean up when component unmounts
     return () => {
-      if (calibrationTimerRef.current) {
-        clearTimeout(calibrationTimerRef.current);
+      if (calibrationStep === 3) {
+        gazeRecorderService.stopTracking();
       }
     };
-  }, []);
+  }, [setCalibrationComplete, setStep, toast, calibrationStep, setCalibrationStep]);
 
+  // Progress simulation for the calibration process
   useEffect(() => {
-    // Only run the calibration sequence if we're on step 3 and showing dots
-    if (calibrationStep === 3 && showDot) {
-      // Clear any existing timer to avoid multiple timers
-      if (calibrationTimerRef.current) {
-        clearTimeout(calibrationTimerRef.current);
-      }
-      
-      const totalPositions = positions.length * 2; // Once for light mode, once for dark mode
-      
-      // Process the next dot position
-      const processDotPosition = () => {
-        // If we've completed all positions in both modes
-        if (positionIndexRef.current >= totalPositions) {
-          setCalibrationComplete(true);
-          setStep("success");
+    let progressInterval: number | null = null;
+    
+    if (calibrationStep === 3) {
+      let progress = 0;
+      progressInterval = window.setInterval(() => {
+        progress += 1;
+        if (progress > 100) {
+          if (progressInterval) {
+            clearInterval(progressInterval);
+          }
           return;
         }
-        
-        // Calculate current position index within the positions array
-        const currentPositionIndex = positionIndexRef.current % positions.length;
-        
-        // Set the dot to the current position
-        setDotPosition(positions[currentPositionIndex]);
-        
-        // Switch mode halfway through
-        if (positionIndexRef.current === positions.length) {
-          setCalibrationMode(calibrationMode === 'light' ? 'dark' : 'light');
-        }
-        
-        // Update progress
-        const newProgress = Math.floor(((positionIndexRef.current + 1) / totalPositions) * 100);
-        setCalibrationProgress(newProgress);
-        
-        // Increment position index
-        positionIndexRef.current += 1;
-        
-        // Schedule the next position after 2 seconds
-        calibrationTimerRef.current = setTimeout(processDotPosition, 2000);
-      };
-      
-      // Start the sequence
-      processDotPosition();
+        setCalibrationProgress(progress);
+      }, 300);
     }
-    
-    // Clean up function
+
     return () => {
-      if (calibrationTimerRef.current) {
-        clearTimeout(calibrationTimerRef.current);
+      if (progressInterval) {
+        clearInterval(progressInterval);
       }
     };
-  }, [calibrationStep, showDot, calibrationMode, setCalibrationMode, setStep, setCalibrationComplete]);
+  }, [calibrationStep]);
 
   const handleNextStep = async () => {
     if (calibrationStep === 1) {
@@ -103,10 +89,18 @@ const CalibrationScreen: React.FC = () => {
       }
     } else if (calibrationStep === 2) {
       setCalibrationStep(3);
-      // Reset position index when starting calibration
-      positionIndexRef.current = 0;
       setCalibrationProgress(0);
-      setShowDot(true);
+      // Start the GazeRecorder API calibration
+      try {
+        gazeRecorderService.startTracking();
+      } catch (error) {
+        console.error("Failed to start eye tracking:", error);
+        toast({
+          title: "Error",
+          description: "Failed to start eye tracking. Please try again.",
+          variant: "destructive"
+        });
+      }
     }
   };
 
@@ -140,17 +134,17 @@ const CalibrationScreen: React.FC = () => {
             <CardHeader>
               <CardTitle className="text-2xl">Step 2: Ready for Calibration</CardTitle>
               <CardDescription>
-                Let's calibrate your eye tracking in both light and dark modes
+                Let's calibrate your eye tracking
               </CardDescription>
             </CardHeader>
             <CardContent className="space-y-4">
               <div className="bg-secondary p-6 rounded-lg text-center">
                 <p className="font-medium">
-                  In the next step, you'll see dots appearing on your screen
+                  In the next step, you'll see dots appearing on your screen for calibration
                 </p>
                 <p className="text-sm mt-2">
-                  Please follow the dots with your eyes as they move. 
-                  The calibration will happen in both light and dark modes.
+                  Please follow the dots with your eyes as they move across the screen.
+                  Keep your head still during the calibration process.
                 </p>
                 <div className="mt-4">
                   <div className="flex items-center gap-2 justify-center">
@@ -168,22 +162,15 @@ const CalibrationScreen: React.FC = () => {
             <CardHeader>
               <CardTitle className="text-2xl">Step 3: Calibrating</CardTitle>
               <CardDescription>
-                Follow the dot with your eyes - {calibrationMode} mode
+                Follow the dots with your eyes
               </CardDescription>
             </CardHeader>
             <CardContent className="space-y-4 relative h-60">
-              <div 
-                className="calibration-dot absolute w-6 h-6 rounded-full bg-eyetrack-purple transition-all duration-500"
-                style={{ 
-                  left: dotPosition.x, 
-                  top: dotPosition.y, 
-                  transform: 'translate(-50%, -50%)' 
-                }}
-              ></div>
+              {/* The GazeRecorderAPI will handle displaying the calibration dots */}
               <div className="absolute bottom-0 left-0 w-full">
                 <Progress value={calibrationProgress} className="h-2" />
                 <p className="text-center mt-2 text-sm text-muted-foreground">
-                  Calibration Progress: {calibrationProgress}%
+                  Calibration in progress...
                 </p>
               </div>
             </CardContent>
