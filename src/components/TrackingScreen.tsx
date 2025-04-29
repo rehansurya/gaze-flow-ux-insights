@@ -3,6 +3,8 @@ import React, { useEffect, useState, useRef } from "react";
 import { useEyeTracking } from "@/contexts/EyeTrackingContext";
 import gazeRecorderService from "@/services/GazeRecorderService";
 import { useToast } from "@/components/ui/use-toast";
+import { Button } from "@/components/ui/button";
+import { StopCircle } from "lucide-react";
 
 const TrackingScreen: React.FC = () => {
   const { 
@@ -12,7 +14,8 @@ const TrackingScreen: React.FC = () => {
     setStep, 
     setRecordingUrl, 
     setHeatmapUrl,
-    setGazePrediction
+    setGazePrediction,
+    gazePrediction
   } = useEyeTracking();
   
   const [gazePoints, setGazePoints] = useState<Array<{ x: number, y: number, timestamp: number }>>([]);
@@ -86,10 +89,32 @@ const TrackingScreen: React.FC = () => {
         sandbox="allow-same-origin allow-scripts"
       />
       
-      {/* GazeRecorderAPI will handle the gaze dot visualization */}
+      {/* Red dot that follows the gaze */}
+      {gazePrediction && (
+        <div 
+          className="absolute w-5 h-5 rounded-full bg-red-500 pointer-events-none" 
+          style={{
+            left: `${gazePrediction.x}px`,
+            top: `${gazePrediction.y}px`,
+            transform: 'translate(-50%, -50%)',
+            opacity: 0.7,
+            boxShadow: '0 0 10px rgba(255, 0, 0, 0.5)'
+          }}
+        />
+      )}
       
-      <div className="absolute top-4 right-4 bg-black bg-opacity-70 text-white p-2 rounded-md text-sm z-50">
-        Press ESC to stop recording
+      <div className="absolute top-4 right-4 flex flex-col gap-2 z-50">
+        <Button
+          variant="destructive"
+          size="lg"
+          className="gap-2"
+          onClick={stopRecording}
+        >
+          <StopCircle size={16} /> Stop Tracking
+        </Button>
+        <div className="bg-black bg-opacity-70 text-white p-2 rounded-md text-sm">
+          Press ESC to stop recording
+        </div>
       </div>
     </div>
   );

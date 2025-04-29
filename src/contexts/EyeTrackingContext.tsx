@@ -3,7 +3,7 @@ import React, { createContext, useContext, useState, useEffect, ReactNode } from
 import { toast } from "@/components/ui/use-toast";
 
 export type CalibrationMode = "light" | "dark";
-export type AppStep = "intro" | "calibration" | "success" | "website" | "tracking" | "results";
+export type AppStep = "intro" | "website" | "calibration" | "tracking" | "results";
 
 interface EyeTrackingContextType {
   step: AppStep;

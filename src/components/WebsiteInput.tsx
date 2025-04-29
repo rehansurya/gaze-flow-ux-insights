@@ -5,11 +5,10 @@ import { Input } from "@/components/ui/input";
 import { Card, CardContent, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
 import { useToast } from "@/components/ui/use-toast";
 import { useEyeTracking } from "@/contexts/EyeTrackingContext";
-import { Play } from "lucide-react";
-import gazeRecorderService from "@/services/GazeRecorderService";
+import { ArrowRight } from "lucide-react";
 
 const WebsiteInput: React.FC = () => {
-  const { websiteUrl, setWebsiteUrl, setStep, setIsRecording } = useEyeTracking();
+  const { websiteUrl, setWebsiteUrl, setStep } = useEyeTracking();
   const [inputUrl, setInputUrl] = useState("");
   const [isValidUrl, setIsValidUrl] = useState(false);
   const [showPreview, setShowPreview] = useState(false);
@@ -45,13 +44,9 @@ const WebsiteInput: React.FC = () => {
     }
   };
 
-  const startTracking = () => {
-    // Configure GazeRecorder API
-    gazeRecorderService.setFps(30); // Set higher FPS for better tracking
-    
-    // Start recording
-    setIsRecording(true);
-    setStep("tracking");
+  const startCalibration = () => {
+    // Move to calibration step
+    setStep("calibration");
   };
 
   return (
@@ -89,11 +84,11 @@ const WebsiteInput: React.FC = () => {
         {isValidUrl && (
           <CardFooter className="flex justify-center pb-6">
             <Button 
-              onClick={startTracking}
+              onClick={startCalibration}
               size="lg"
               className="gap-2"
             >
-              Start Eye Tracking <Play size={16} />
+              Continue with Eye Calibration <ArrowRight size={16} />
             </Button>
           </CardFooter>
         )}

@@ -16,7 +16,8 @@ const CalibrationScreen: React.FC = () => {
     setStep,
     setCalibrationComplete,
     requestCameraPermission,
-    cameraPermission
+    cameraPermission,
+    setIsRecording
   } = useEyeTracking();
   
   const [calibrationProgress, setCalibrationProgress] = useState(0);
@@ -28,7 +29,10 @@ const CalibrationScreen: React.FC = () => {
       console.log("Calibration completed successfully");
       setCalibrationComplete(true);
       gazeRecorderService.stopTracking();
-      setStep("success");
+      
+      // Go directly to tracking instead of success screen
+      setIsRecording(true);
+      setStep("tracking");
     });
 
     gazeRecorderService.onCameraPermissionDenied(() => {
@@ -54,7 +58,7 @@ const CalibrationScreen: React.FC = () => {
         gazeRecorderService.stopTracking();
       }
     };
-  }, [setCalibrationComplete, setStep, toast, calibrationStep, setCalibrationStep]);
+  }, [setCalibrationComplete, setStep, toast, calibrationStep, setCalibrationStep, setIsRecording]);
 
   // Progress simulation for the calibration process
   useEffect(() => {
@@ -148,7 +152,7 @@ const CalibrationScreen: React.FC = () => {
                 </p>
                 <div className="mt-4">
                   <div className="flex items-center gap-2 justify-center">
-                    <div className="w-4 h-4 rounded-full bg-eyetrack-purple"></div>
+                    <div className="w-4 h-4 rounded-full bg-red-500"></div>
                     <span>Follow these dots with your eyes</span>
                   </div>
                 </div>

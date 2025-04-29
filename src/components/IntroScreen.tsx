@@ -45,7 +45,7 @@ const IntroScreen: React.FC = () => {
           <Button 
             size="lg" 
             className="w-full max-w-xs text-lg" 
-            onClick={() => setStep("calibration")}
+            onClick={() => setStep("website")}
           >
             Start Testing Your Website
           </Button>
