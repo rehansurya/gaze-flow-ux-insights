@@ -44,7 +44,7 @@ const WebsiteInput: React.FC = () => {
     }
   };
 
-  const startCalibration = () => {
+  const startTracking = () => {
     setIsRecording(true);
     setStep("tracking");
   };
@@ -84,11 +84,11 @@ const WebsiteInput: React.FC = () => {
         {isValidUrl && (
           <CardFooter className="flex justify-center pb-6">
             <Button 
-              onClick={startCalibration}
+              onClick={startTracking}
               size="lg"
               className="gap-2"
             >
-              Start Calibration <Play size={16} />
+              Start Eye Tracking <Play size={16} />
             </Button>
           </CardFooter>
         )}
