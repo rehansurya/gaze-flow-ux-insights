@@ -1,13 +1,39 @@
-// Update this page (the content is just a fallback if you fail to update the page)
 
-const Index = () => {
+import React from "react";
+import { EyeTrackingProvider, useEyeTracking } from "@/contexts/EyeTrackingContext";
+import IntroScreen from "@/components/IntroScreen";
+import CalibrationScreen from "@/components/CalibrationScreen";
+import CalibrationSuccess from "@/components/CalibrationSuccess";
+import WebsiteInput from "@/components/WebsiteInput";
+import TrackingScreen from "@/components/TrackingScreen";
+import ResultsScreen from "@/components/ResultsScreen";
+
+const AppContent: React.FC = () => {
+  const { step } = useEyeTracking();
+
+  switch (step) {
+    case "intro":
+      return <IntroScreen />;
+    case "calibration":
+      return <CalibrationScreen />;
+    case "success":
+      return <CalibrationSuccess />;
+    case "website":
+      return <WebsiteInput />;
+    case "tracking":
+      return <TrackingScreen />;
+    case "results":
+      return <ResultsScreen />;
+    default:
+      return <IntroScreen />;
+  }
+};
+
+const Index: React.FC = () => {
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gray-100">
-      <div className="text-center">
-        <h1 className="text-4xl font-bold mb-4">Welcome to Your Blank App</h1>
-        <p className="text-xl text-gray-600">Start building your amazing project here!</p>
-      </div>
-    </div>
+    <EyeTrackingProvider>
+      <AppContent />
+    </EyeTrackingProvider>
   );
 };
 

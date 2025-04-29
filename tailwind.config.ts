@@ -1,3 +1,4 @@
+
 import type { Config } from "tailwindcss";
 
 export default {
@@ -61,6 +62,14 @@ export default {
 					'accent-foreground': 'hsl(var(--sidebar-accent-foreground))',
 					border: 'hsl(var(--sidebar-border))',
 					ring: 'hsl(var(--sidebar-ring))'
+				},
+				// Eye tracking specific colors
+				eyetrack: {
+					purple: '#8B5CF6',
+					indigo: '#6366F1',
+					blue: '#3B82F6',
+					darkgray: '#1F2937',
+					lightgray: '#F9FAFB',
 				}
 			},
 			borderRadius: {
@@ -84,11 +93,34 @@ export default {
 					to: {
 						height: '0'
 					}
+				},
+				'pulse-dot': {
+					'0%': {
+						transform: 'scale(1)',
+						opacity: '1'
+					},
+					'50%': {
+						transform: 'scale(1.2)',
+						opacity: '0.7'
+					},
+					'100%': {
+						transform: 'scale(1)',
+						opacity: '1'
+					}
+				},
+				'move-dot': {
+					'0%': { transform: 'translate(0, 0)' },
+					'25%': { transform: 'translate(100px, 0)' },
+					'50%': { transform: 'translate(100px, 100px)' },
+					'75%': { transform: 'translate(0, 100px)' },
+					'100%': { transform: 'translate(0, 0)' }
 				}
 			},
 			animation: {
 				'accordion-down': 'accordion-down 0.2s ease-out',
-				'accordion-up': 'accordion-up 0.2s ease-out'
+				'accordion-up': 'accordion-up 0.2s ease-out',
+				'pulse-dot': 'pulse-dot 2s infinite ease-in-out',
+				'move-dot': 'move-dot 8s infinite ease-in-out'
 			}
 		}
 	},
