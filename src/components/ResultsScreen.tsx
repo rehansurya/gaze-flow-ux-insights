@@ -5,16 +5,23 @@ import { Card, CardContent, CardFooter, CardHeader, CardTitle } from "@/componen
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useEyeTracking } from "@/contexts/EyeTrackingContext";
 import { Download, ArrowLeft } from "lucide-react";
+import { useToast } from "@/components/ui/use-toast";
 
 const ResultsScreen: React.FC = () => {
-  const { recordingUrl, heatmapUrl, setStep } = useEyeTracking();
+  const { recordingUrl, heatmapUrl, setStep, websiteUrl } = useEyeTracking();
+  const { toast } = useToast();
 
   const downloadRecording = () => {
     // In a real app, this would download the actual recording
-    // For demo purposes, we're just showing a placeholder
+    toast({
+      title: "Downloading Recording",
+      description: "Your recording is being prepared for download."
+    });
+    
+    // Create a simulated download for demo purposes
     const a = document.createElement("a");
     a.href = recordingUrl;
-    a.download = "eye-tracking-recording.mp4";
+    a.download = `eye-tracking-${new Date().toISOString()}.mp4`;
     document.body.appendChild(a);
     a.click();
     document.body.removeChild(a);
@@ -24,7 +31,7 @@ const ResultsScreen: React.FC = () => {
     <div className="flex min-h-screen items-center justify-center p-4 bg-gray-50">
       <Card className="w-full max-w-4xl shadow-lg">
         <CardHeader>
-          <CardTitle className="text-2xl">Eye Tracking Results</CardTitle>
+          <CardTitle className="text-2xl">Eye Tracking Results for {websiteUrl}</CardTitle>
         </CardHeader>
         <CardContent className="space-y-6">
           <Tabs defaultValue="heatmap" className="w-full">
@@ -69,9 +76,9 @@ const ResultsScreen: React.FC = () => {
           <div className="bg-secondary p-4 rounded-lg">
             <h3 className="font-medium">Analysis Summary</h3>
             <p className="text-sm mt-2">
-              This heatmap shows where users focused most of their attention during the session.
+              This heatmap shows where you focused most of your attention during the session.
               Red areas indicate the highest concentration of focus, yellow areas moderate focus,
-              and green areas minimal focus.
+              and green areas minimal focus. The recording shows the path your eyes followed while browsing.
             </p>
           </div>
         </CardContent>

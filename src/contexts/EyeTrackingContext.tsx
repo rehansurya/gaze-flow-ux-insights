@@ -68,10 +68,23 @@ export const EyeTrackingProvider: React.FC<EyeTrackingProviderProps> = ({ childr
     }
   };
 
+  // Reset calibration state when moving to calibration step
+  useEffect(() => {
+    if (step === "calibration") {
+      setCalibrationStep(1);
+      setCalibrationComplete(false);
+    }
+  }, [step]);
+
   // Reset tracking and recording when step changes
   useEffect(() => {
     if (step !== "tracking" && isRecording) {
       setIsRecording(false);
+    }
+    
+    // Reset gaze prediction when not in tracking mode
+    if (step !== "tracking") {
+      setGazePrediction(null);
     }
   }, [step, isRecording]);
 

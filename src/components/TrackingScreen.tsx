@@ -21,11 +21,12 @@ const TrackingScreen: React.FC = () => {
   const [gazePoints, setGazePoints] = useState<Array<{ x: number, y: number, timestamp: number }>>([]);
   const iframeRef = useRef<HTMLIFrameElement>(null);
   const startTimeRef = useRef<number>(Date.now());
+  const [showGazeDot, setShowGazeDot] = useState(true);
   const { toast } = useToast();
 
   // Start recording when component mounts
   useEffect(() => {
-    if (isRecording) {
+    const startRecording = () => {
       startTimeRef.current = Date.now();
       
       // Setup escape key handler to stop recording
@@ -42,6 +43,7 @@ const TrackingScreen: React.FC = () => {
         gazeRecorderService.onGaze((x, y) => {
           // Update gaze prediction for UI visualization
           setGazePrediction({ x, y });
+          setShowGazeDot(true);
           
           // Record gaze point with timestamp for heatmap generation
           setGazePoints(prev => [
@@ -65,18 +67,37 @@ const TrackingScreen: React.FC = () => {
         window.removeEventListener("keydown", handleKeyDown);
         gazeRecorderService.stopTracking();
       };
+    };
+
+    if (isRecording) {
+      return startRecording();
     }
   }, [isRecording, setGazePrediction, toast]);
 
   const stopRecording = () => {
     setIsRecording(false);
     gazeRecorderService.stopTracking();
-    setStep("results");
+
+    // Generate recording URLs using the captured gaze points
+    if (gazePoints.length > 0) {
+      // In a real implementation, this would generate actual recordings based on gazePoints
+      // Here we're using placeholder URLs but in real app you'd process the gazePoints data
+      setRecordingUrl("/placeholder.svg");
+      setHeatmapUrl("/placeholder.svg");
+      console.log(`Generated recording with ${gazePoints.length} gaze points`);
+      toast({
+        title: "Recording Complete",
+        description: `Captured ${gazePoints.length} gaze points for analysis.`
+      });
+    } else {
+      toast({
+        title: "Recording Empty",
+        description: "No gaze points were captured during the session.",
+        variant: "destructive"
+      });
+    }
     
-    // Generate placeholder URLs for the recording and heatmap
-    // In a real implementation, this would generate actual recordings based on gazePoints
-    setRecordingUrl("/placeholder.svg");
-    setHeatmapUrl("/placeholder.svg");
+    setStep("results");
   };
 
   return (
@@ -89,8 +110,8 @@ const TrackingScreen: React.FC = () => {
         sandbox="allow-same-origin allow-scripts"
       />
       
-      {/* Red dot that follows the gaze */}
-      {gazePrediction && (
+      {/* Red dot that follows the gaze - always visible when gazePrediction exists */}
+      {gazePrediction && showGazeDot && (
         <div 
           className="absolute w-5 h-5 rounded-full bg-red-500 pointer-events-none" 
           style={{
@@ -98,7 +119,8 @@ const TrackingScreen: React.FC = () => {
             top: `${gazePrediction.y}px`,
             transform: 'translate(-50%, -50%)',
             opacity: 0.7,
-            boxShadow: '0 0 10px rgba(255, 0, 0, 0.5)'
+            boxShadow: '0 0 10px rgba(255, 0, 0, 0.5)',
+            zIndex: 9999
           }}
         />
       )}

@@ -21,16 +21,18 @@ const CalibrationScreen: React.FC = () => {
   } = useEyeTracking();
   
   const [calibrationProgress, setCalibrationProgress] = useState(0);
+  const [calibrationStarted, setCalibrationStarted] = useState(false);
   const { toast } = useToast();
 
   // Set up GazeRecorder API callbacks
   useEffect(() => {
+    // Only set up callbacks if they haven't been set up already
     gazeRecorderService.onCalibrationComplete(() => {
       console.log("Calibration completed successfully");
       setCalibrationComplete(true);
       gazeRecorderService.stopTracking();
       
-      // Go directly to tracking instead of success screen
+      // Go directly to tracking instead of showing another screen
       setIsRecording(true);
       setStep("tracking");
     });
@@ -54,17 +56,17 @@ const CalibrationScreen: React.FC = () => {
 
     // Clean up when component unmounts
     return () => {
-      if (calibrationStep === 3) {
+      if (calibrationStarted) {
         gazeRecorderService.stopTracking();
       }
     };
-  }, [setCalibrationComplete, setStep, toast, calibrationStep, setCalibrationStep, setIsRecording]);
+  }, [setCalibrationComplete, setStep, toast, setCalibrationStep, setIsRecording, calibrationStarted]);
 
   // Progress simulation for the calibration process
   useEffect(() => {
     let progressInterval: number | null = null;
     
-    if (calibrationStep === 3) {
+    if (calibrationStep === 3 && calibrationStarted) {
       let progress = 0;
       progressInterval = window.setInterval(() => {
         progress += 1;
@@ -83,7 +85,7 @@ const CalibrationScreen: React.FC = () => {
         clearInterval(progressInterval);
       }
     };
-  }, [calibrationStep]);
+  }, [calibrationStep, calibrationStarted]);
 
   const handleNextStep = async () => {
     if (calibrationStep === 1) {
@@ -94,6 +96,8 @@ const CalibrationScreen: React.FC = () => {
     } else if (calibrationStep === 2) {
       setCalibrationStep(3);
       setCalibrationProgress(0);
+      setCalibrationStarted(true);
+      
       // Start the GazeRecorder API calibration
       try {
         gazeRecorderService.startTracking();
